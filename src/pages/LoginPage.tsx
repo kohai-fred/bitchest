@@ -1,19 +1,23 @@
 import {
   Box,
   Button,
+  CircularProgress,
   Container,
   FormGroup,
   FormHelperText,
   TextField,
   Typography,
+  useTheme,
 } from "@mui/material";
 import RequireAuth from "@src/auth/RequireAuth";
 import axiosInstance from "@src/services/axiosInstance";
 import { UserType } from "@src/types/user.type";
 import { getUserCookies, setUserCookies } from "@src/utils/cookiesUser";
 import { useQuery } from "@tanstack/react-query";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
+import ImageText from "@src/assets/text_150.png";
+import { useSnackbar } from "notistack";
 
 type FormValues = {
   email: string;
@@ -24,14 +28,14 @@ const RULES = {
   email: {
     pattern: {
       value: /^[a-zA-Z0-9.+_-]+@[a-zA-Z0-9-_]+\.[a-zA-Z]{2,10}$/,
-      message: "format email is not valid",
+      message: "L'email n'est pas valid",
     },
   },
   password: {
     pattern: {
       value: /^(?=.*\d)(?=.*[a-z])(?=.*[A-Z]).{8,}$/,
       message:
-        "8 characters min. which contain at least one numeric digit, one uppercase and one lowercase letter ",
+        "8 caract. min. et au moins 1 chiffre, 1 minuscule et 1 majuscule",
     },
   },
 };
@@ -43,11 +47,12 @@ async function getUser(payload: string) {
     method: "post",
   });
   if (status) throw new Error(message);
-  console.log("🆘 GET USER", res);
   setUserCookies(res.user as UserType);
   return res;
 }
 const LoginPage = () => {
+  const theme = useTheme();
+  const { enqueueSnackbar } = useSnackbar();
   const user = getUserCookies();
   const [formData, setFormData] = useState("");
   const { data, isError, error, isFetching, isLoading } = useQuery({
@@ -69,20 +74,28 @@ const LoginPage = () => {
     setFormData(JSON.stringify(formValue));
   };
 
+  useEffect(() => {
+    if (!isError) return;
+    const err = error as Error;
+    if (err.message) enqueueSnackbar(err.message, { variant: "error" });
+  }, [isError]);
+
   return (
     <RequireAuth>
       {!user && !data?.user && (
         <Container
-          sx={{ display: "grid", placeContent: "center", height: "60vh" }}
+          sx={{ display: "grid", placeContent: "center", height: "80vh" }}
         >
           <Box
             sx={{
               border: "1px solid",
-              borderColor: "ActiveBorder",
-              p: 2,
+              borderColor: "customColors.bitchest.light",
+              p: 3,
+              width: "clamp(330px, 50vw, 500px)",
             }}
           >
             <Typography variant="h4">Bienvenue sur </Typography>
+            <img src={ImageText} alt="nom du site : Bitchest" />
             <Box
               component="form"
               mt={8}
@@ -121,15 +134,25 @@ const LoginPage = () => {
                   {errors.password?.message}
                 </FormHelperText>
               </FormGroup>
-
-              <Button type="submit" variant="outlined" size="large">
+              <Button
+                type="submit"
+                variant="outlined"
+                size="large"
+                sx={{
+                  color: "customColors.bitchest.light",
+                  borderColor: "customColors.bitchest.light",
+                }}
+              >
                 Se connecter
+                <CircularProgress
+                  size={12}
+                  sx={{
+                    ml: 2,
+                    color: isFetching ? "var(--bitchest-main)" : "transparent",
+                  }}
+                />
               </Button>
             </Box>
-            {isFetching && <p>Fetching</p>}
-            {isLoading && <p>Loading</p>}
-            {isError && <p>{(error as Error).message}</p>}
-            {data && <p>{data.user?.role}</p>}
           </Box>
         </Container>
       )}

@@ -1,18 +1,29 @@
 import CssBaseline from "@mui/material/CssBaseline";
 import { ThemeProvider, createTheme } from "@mui/material/styles";
+import { SnackbarProvider, SnackbarProviderProps } from "notistack";
 import { PropsWithChildren } from "react";
+import { customColors } from "./themes/customColors";
+import "@src/types/customColors.type";
 
 const darkTheme = createTheme({
   palette: {
     mode: "dark",
+    customColors,
   },
 });
+
+const snackBarOptions: SnackbarProviderProps = {
+  TransitionProps: { direction: "left" },
+  anchorOrigin: { vertical: "top", horizontal: "right" },
+  variant: "warning",
+  maxSnack: 1,
+};
 
 function App({ children }: PropsWithChildren) {
   return (
     <ThemeProvider theme={darkTheme}>
       <CssBaseline />
-      {children}
+      <SnackbarProvider {...snackBarOptions}>{children}</SnackbarProvider>
     </ThemeProvider>
   );
 }
