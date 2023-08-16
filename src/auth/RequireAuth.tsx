@@ -9,13 +9,12 @@ const RequireAuth = ({ children }: PropsWithChildren) => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    console.log("🆘 USEFFECT,", location.pathname, "userAuth=>", userAuth);
     switch (userAuth?.role) {
       case "admin":
-        if (location.pathname !== "/admin") navigate("/admin");
+        if (!location.pathname.startsWith("/admin")) navigate("/admin");
         break;
       case "client":
-        if (location.pathname !== "/client") navigate("/client");
+        if (!location.pathname.startsWith("/client")) navigate("/client");
         break;
       default:
         navigate("/");
