@@ -18,6 +18,7 @@ import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import ImageText from "@src/assets/text_150.png";
 import { useSnackbar } from "notistack";
+import { authenticateUser } from "@src/services/authenticateUser";
 
 type FormValues = {
   email: string;
@@ -40,16 +41,6 @@ const RULES = {
   },
 };
 
-async function getUser(payload: string) {
-  const [res, status, message] = await axiosInstance({
-    url: "/login",
-    data: JSON.parse(payload),
-    method: "post",
-  });
-  if (status) throw new Error(message);
-  setUserCookies(res.user as UserType);
-  return res;
-}
 const LoginPage = () => {
   const theme = useTheme();
   const { enqueueSnackbar } = useSnackbar();
@@ -57,7 +48,7 @@ const LoginPage = () => {
   const [formData, setFormData] = useState("");
   const { data, isError, error, isFetching, isLoading } = useQuery({
     queryKey: ["login", formData],
-    queryFn: () => getUser(formData),
+    queryFn: () => authenticateUser(formData),
     enabled: !!formData,
     staleTime: Infinity,
     refetchOnWindowFocus: false,
