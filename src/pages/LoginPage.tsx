@@ -7,47 +7,29 @@ import {
   FormHelperText,
   TextField,
   Typography,
-  useTheme,
 } from "@mui/material";
+import ImageText from "@src/assets/text_150.png";
 import RequireAuth from "@src/auth/RequireAuth";
-import axiosInstance from "@src/services/axiosInstance";
-import { UserType } from "@src/types/user.type";
-import { getUserCookies, setUserCookies } from "@src/utils/cookiesUser";
+import { authenticateUser } from "@src/services/authenticateUser";
+import { getUserCookies } from "@src/utils/cookiesUser";
+import { USER_FORM_RULES } from "@src/validation/userFormRules";
 import { useQuery } from "@tanstack/react-query";
+import { useSnackbar } from "notistack";
 import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
-import ImageText from "@src/assets/text_150.png";
-import { useSnackbar } from "notistack";
-import { authenticateUser } from "@src/services/authenticateUser";
 
 type FormValues = {
   email: string;
   password: string;
 };
 
-const RULES = {
-  email: {
-    pattern: {
-      value: /^[a-zA-Z0-9.+_-]+@[a-zA-Z0-9-_]+\.[a-zA-Z]{2,10}$/,
-      message: "L'email n'est pas valid",
-    },
-  },
-  password: {
-    pattern: {
-      value: /^(?=.*\d)(?=.*[a-z])(?=.*[A-Z]).{8,}$/,
-      message:
-        "8 caract. min. et au moins 1 chiffre, 1 minuscule et 1 majuscule",
-    },
-  },
-};
-
 const LoginPage = () => {
-  const theme = useTheme();
   const { enqueueSnackbar } = useSnackbar();
   const user = getUserCookies();
   const [formData, setFormData] = useState("");
+
   const { data, isError, error, isFetching, isLoading } = useQuery({
-    queryKey: ["login", formData],
+    queryKey: ["login"],
     queryFn: () => authenticateUser(formData),
     enabled: !!formData,
     staleTime: Infinity,
@@ -96,10 +78,11 @@ const LoginPage = () => {
             >
               <FormGroup>
                 <TextField
+                  autoFocus
                   label="Email"
                   type="email"
                   {...register("email", {
-                    ...RULES.email,
+                    ...USER_FORM_RULES.email,
                     required: "l'email est obligatoire",
                   })}
                 >
@@ -115,7 +98,7 @@ const LoginPage = () => {
                   type="password"
                   id="password"
                   {...register("password", {
-                    ...RULES.password,
+                    ...USER_FORM_RULES.password,
                     required: "le mot de passe est obligatoire",
                   })}
                 >

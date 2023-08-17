@@ -1,9 +1,11 @@
+import { getUserCookies } from "@src/utils/cookiesUser";
 import axios from "axios";
 
 type AxiosInstance<T> = {
   url: string;
   method?: "get" | "post" | "patch" | "put" | "delete";
   data?: T;
+  token?: string;
 };
 
 const axiosBase = axios.create({
@@ -15,9 +17,16 @@ export async function axiosInstance<T>({
   method = "get",
   data,
 }: AxiosInstance<T>) {
+  const token = getUserCookies()?.token;
+
   const res = await axiosBase(url, {
     method,
     data,
+    headers: {
+      Accept: "Content-Type",
+      "Content-Type": "application/json",
+      Authorization: token ? `Bearer ${token}` : "",
+    },
   });
 
   if (res.status !== 200) {

@@ -9,6 +9,6 @@ export async function authenticateUser(payload: string) {
     method: "post",
   });
   if (status) throw new Error(message);
-  setUserCookies(res.token, res.user as UserType);
+  setUserCookies(res.user as UserType);
   return res;
 }

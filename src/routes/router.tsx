@@ -1,7 +1,7 @@
-import AdminLayout from "@src/layouts/AdminLayout";
-import ClientLayout from "@src/layouts/ClientLayout";
+import LayoutPage from "@src/layouts/LayoutPage";
 import LoginPage from "@src/pages/LoginPage";
 import { createBrowserRouter } from "react-router-dom";
+import { adminMenu, clientMenu } from "./menu";
 
 export const routes = [
   {
@@ -12,12 +12,14 @@ export const routes = [
   {
     title: "Client",
     path: "/client",
-    element: <ClientLayout />,
+    element: <LayoutPage />,
+    children: [...clientMenu],
   },
   {
     title: "Admin",
     path: "/admin",
-    element: <AdminLayout />,
+    element: <LayoutPage />,
+    children: [...adminMenu],
   },
 ];
 
