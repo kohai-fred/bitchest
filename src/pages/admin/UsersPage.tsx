@@ -64,9 +64,10 @@ const UsersPage = () => {
     setOpenFormModal(true);
   }
 
-  useEffect(() => {
-    if (!openFormModal && userModification) setUserModification(null);
-  }, [openFormModal, userModification]);
+  function openModalCreatUser() {
+    setUserModification(null);
+    setOpenFormModal(true);
+  }
 
   return (
     <>
@@ -78,7 +79,7 @@ const UsersPage = () => {
           <Button
             size="large"
             variant="outlined"
-            onClick={() => setOpenFormModal(true)}
+            onClick={openModalCreatUser}
             sx={{
               display: "block",
               marginInline: "auto 0",
