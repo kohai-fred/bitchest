@@ -10,6 +10,18 @@ const darkTheme = createTheme({
     mode: "dark",
     customColors,
   },
+  typography: {
+    fontFamily: [
+      "Montserrat",
+      "Roboto",
+      "sans-serif",
+      "Inter",
+      "system-ui",
+      "Avenir",
+      "Helvetica",
+      "Arial",
+    ].join(","),
+  },
 });
 
 const snackBarOptions: SnackbarProviderProps = {
