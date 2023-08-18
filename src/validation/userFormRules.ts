@@ -16,7 +16,7 @@ export const USER_FORM_RULES = {
     pattern: {
       // value: /\p{L}+/, //Does not work with react-hook-form...
       value:
-        /^[a-zàèìòùÀÈÌÒÙáéíóúýÁÉÍÓÚÝâêîôûÂÊÎÔÛãñõÃÑÕäëïöüÿÄËÏÖÜŸçÇßØøÅåÆæœ-]+$/i,
+        /^[\sa-zàèìòùÀÈÌÒÙáéíóúýÁÉÍÓÚÝâêîôûÂÊÎÔÛãñõÃÑÕäëïöüÿÄËÏÖÜŸçÇßØøÅåÆæœ-]+$/i,
       message: "Le champ ne peut contenir que des lettres",
     },
   },
