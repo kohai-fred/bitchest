@@ -10,4 +10,5 @@ export type UserType = {
   lastname: string;
   updated_at: string;
   token: string;
+  presentation: string | null;
 };

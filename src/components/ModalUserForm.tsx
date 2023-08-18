@@ -60,6 +60,7 @@ const initialUser: FormValuesUser = {
   email: "",
   role: "client",
   password: "",
+  presentation: "",
 };
 const ModalUserForm = ({ open, userEdit, setOpen, refetch }: ModalProps) => {
   const user = !userEdit ? { ...initialUser } : { ...userEdit, password: "" };
@@ -256,6 +257,24 @@ const ModalUserForm = ({ open, userEdit, setOpen, refetch }: ModalProps) => {
               )}
             />
           )}
+          <FormGroup>
+            <TextField
+              label="Présentation"
+              multiline
+              id="presentation"
+              {...register("presentation", {
+                maxLength: {
+                  value: 200,
+                  message: "Maximum 200 caractères",
+                },
+              })}
+              placeholder="Maximum 200 caractères"
+              defaultValue={formData.presentation}
+            />
+            <FormHelperText sx={{ color: "red" }}>
+              {errors.presentation?.message}
+            </FormHelperText>
+          </FormGroup>
         </Box>
       </DialogContent>
       <DialogActions>
@@ -271,6 +290,9 @@ const ModalUserForm = ({ open, userEdit, setOpen, refetch }: ModalProps) => {
           sx={{
             color: "customColors.bitchest.main",
             borderColor: "customColors.bitchest.main",
+            "&:hover": {
+              borderColor: "customColors.bitchest.main",
+            },
           }}
         >
           {userEdit ? "Mettre à jour" : "Créer"}
