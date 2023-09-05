@@ -1,5 +1,5 @@
 import Cookies from "js-cookie";
-import type { UserType } from "@src/types/user.type.ts";
+import type { UserCookieType, UserType } from "@src/types/user.type.ts";
 
 const COOKIE_NAME = "bitchest_user";
 
@@ -8,11 +8,7 @@ export function setUserCookies(user: UserType): void {
   Cookies.set(COOKIE_NAME, JSON.stringify({ role, id, token }));
 }
 
-export function getUserCookies(): null | {
-  role: "admin" | "client";
-  id: number;
-  token: string;
-} {
+export function getUserCookies(): null | UserCookieType {
   const user = Cookies.get(COOKIE_NAME);
   if (!user) return null;
   return JSON.parse(user);

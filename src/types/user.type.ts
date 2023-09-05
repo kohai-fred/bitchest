@@ -12,3 +12,9 @@ export type UserType = {
   token: string;
   presentation: string | null;
 };
+
+export type UserCookieType = {
+  role: "admin" | "client";
+  id: number;
+  token: string;
+};
