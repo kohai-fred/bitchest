@@ -12,6 +12,11 @@ const axiosBase = axios.create({
   baseURL: import.meta.env.VITE_BASE_URL_API,
 });
 
+axiosBase.interceptors.response.use(
+  (response) => response,
+  (error) => error
+);
+
 export async function axiosInstance<T>({
   url,
   method = "get",
@@ -29,8 +34,9 @@ export async function axiosInstance<T>({
     },
   });
 
-  if (res.status !== 200) {
-    return [res, res.status, res.statusText];
+  if (res.request.status !== 200) {
+    const message = res.request.responseText ?? res.request.statusText;
+    return [res, res.request.status, message];
   }
 
   if (res.data.status !== 200) {
