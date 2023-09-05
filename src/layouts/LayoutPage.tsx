@@ -2,7 +2,7 @@ import { Logout, PersonPin } from "@mui/icons-material";
 import ChevronLeftIcon from "@mui/icons-material/ChevronLeft";
 import ChevronRightIcon from "@mui/icons-material/ChevronRight";
 import MenuIcon from "@mui/icons-material/Menu";
-import { ListItemButton } from "@mui/material";
+import { ListItemButton, Typography } from "@mui/material";
 import MuiAppBar, { AppBarProps as MuiAppBarProps } from "@mui/material/AppBar";
 import Box from "@mui/material/Box";
 import CssBaseline from "@mui/material/CssBaseline";
@@ -21,14 +21,22 @@ import {
 } from "@src/components/ListItemComponents";
 import useLogout from "@src/hooks/useLogout";
 import { adminMenu, clientMenu } from "@src/routes/menu";
+import {
+  getBalance,
+  getInfoClientTransactions,
+} from "@src/services/walletAndTransactions";
+import { useWalletStore } from "@src/store/wallet.store";
 import { getUserCookies } from "@src/utils/cookiesUser";
-import { useEffect, useState } from "react";
+import { useQuery } from "@tanstack/react-query";
+
+import { useEffect, useMemo, useState } from "react";
 import { Outlet, useLocation, useNavigate } from "react-router-dom";
 
 const drawerWidth = 240;
 const colorLight = "customColors.bitchest.light";
 const colorDark = "customColors.bitchest.dark";
 const colorBitchest = "customColors.bitchest.main";
+const QUERY_KEY = "client";
 
 const openedMixin = (theme: Theme): CSSObject => ({
   width: drawerWidth,
@@ -59,11 +67,9 @@ const DrawerHeader = styled("div")(({ theme }) => ({
   // necessary for content to be below app bar
   ...theme.mixins.toolbar,
 }));
-
 interface AppBarProps extends MuiAppBarProps {
   open?: boolean;
 }
-
 const AppBar = styled(MuiAppBar, {
   shouldForwardProp: (prop) => prop !== "open",
 })<AppBarProps>(({ theme, open }) => ({
@@ -109,6 +115,17 @@ const LayoutPage = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const [open, setOpen] = useState(false);
+  const { wallet, initWallet } = useWalletStore((state) => ({
+    ...state,
+  }));
+  const { data, isLoading, isError } = useQuery({
+    queryKey: [QUERY_KEY],
+    queryFn: getInfoClientTransactions,
+    enabled: userCookie?.role === "client",
+    retry: 1,
+    refetchOnWindowFocus: false,
+    staleTime: Infinity,
+  });
 
   const handleDrawerOpen = () => {
     setOpen(true);
@@ -123,6 +140,11 @@ const LayoutPage = () => {
     if (pathname.endsWith("/client") || pathname.endsWith("admin"))
       navigate(`${userCookie?.role}/crypto`);
   }, []);
+
+  useEffect(() => {
+    if (!data) return;
+    initWallet(data);
+  }, [data]);
 
   return (
     <RequireAuth>
@@ -156,6 +178,13 @@ const LayoutPage = () => {
                 }}
               >
                 <img src={Logo} alt="" />
+              </Box>
+              <Box>
+                {userCookie && userCookie.role === "client" && (
+                  <Typography>
+                    solde&nbsp;:&nbsp;{wallet.balance}&nbsp;€
+                  </Typography>
+                )}
               </Box>
             </Toolbar>
           </AppBar>

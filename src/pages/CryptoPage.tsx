@@ -1,8 +1,5 @@
-import { Mode, DeleteForever } from "@mui/icons-material";
 import {
   Box,
-  Button,
-  IconButton,
   Paper,
   Table,
   TableBody,
@@ -12,23 +9,39 @@ import {
   TableRow,
   Typography,
 } from "@mui/material";
+import BitchestButton from "@src/components/BitchestButton";
+import ModalBuy from "@src/components/modals/ModalBuy";
+import ModalSell from "@src/components/modals/ModalSell";
 import { getLatestCryptosCotation } from "@src/services/cryptos";
+import { useWalletStore } from "@src/store/wallet.store";
+import { LatestCotation } from "@src/types/cryptos";
 import { getUserCookies } from "@src/utils/cookiesUser";
 import { useQuery } from "@tanstack/react-query";
+import { useRef, useState } from "react";
 import { Link } from "react-router-dom";
 
 const CryptoPage = () => {
   const user = getUserCookies();
-  const {
-    data: cryptosCotation,
-    isLoading,
-    isError,
-    error,
-  } = useQuery({
+  const { wallet } = useWalletStore((state) => ({ ...state }));
+  const [openModalBuy, setOpenModalBuy] = useState(false);
+  const [openModalSell, setOpenModalSell] = useState(false);
+  const cotationRef = useRef<null | LatestCotation>(null);
+  const { data: cryptosCotation } = useQuery({
     queryKey: ["latest-cotation"],
     queryFn: getLatestCryptosCotation,
     staleTime: 60_000,
   });
+
+  function handleOpenBuyModal(cotation: LatestCotation) {
+    console.log("🆘 WALET", user?.token, "id", cotation);
+    cotationRef.current = cotation;
+    setOpenModalBuy(true);
+  }
+
+  function handleOpenModalSellModal(cotation: LatestCotation) {
+    cotationRef.current = cotation;
+    setOpenModalSell(true);
+  }
 
   return (
     <>
@@ -46,8 +59,12 @@ const CryptoPage = () => {
                 <TableCell>Crypto-monnaie</TableCell>
                 <TableCell align="right">Cours</TableCell>
                 <TableCell align="right">Détails</TableCell>
-                <TableCell align="right">Acheter</TableCell>
-                <TableCell align="right">Vendre</TableCell>
+                {user?.role === "client" && (
+                  <>
+                    <TableCell align="right">Vendre</TableCell>
+                    <TableCell align="right">Acheter</TableCell>
+                  </>
+                )}
               </TableRow>
             </TableHead>
             <TableBody>
@@ -71,17 +88,6 @@ const CryptoPage = () => {
                           {crypto.name}
                         </Box>
                       </TableCell>
-                      {/* <TableCell
-                        align="right"
-                        sx={{
-                          color:
-                            user.role === "admin"
-                              ? "customColors.bitchest.dark"
-                              : "",
-                        }}
-                      >
-                        {user.role}
-                      </TableCell> */}
                       <TableCell align="right">
                         {crypto.latest_cotation.price} €
                       </TableCell>
@@ -101,24 +107,28 @@ const CryptoPage = () => {
                           {crypto.symbol}
                         </Link>
                       </TableCell>
-                      <TableCell align="right">
-                        <Button variant="outlined">Vendre</Button>
-                        {/* <IconButton
-                          color="info"
-                          // onClick={() => openModalEditUser(user)}
-                        >
-                          <Mode color="info" />
-                        </IconButton> */}
-                      </TableCell>
-                      <TableCell align="right">
-                        <Button variant="outlined">Acheter</Button>
-                        {/* <IconButton
-                          color="error"
-                          onClick={() => openConfirmationDeleteModal(user)}
-                        >
-                          <DeleteForever color="error" />
-                        </IconButton> */}
-                      </TableCell>
+                      {user?.role === "client" && (
+                        <>
+                          <TableCell align="right">
+                            <BitchestButton
+                              disabled={
+                                !wallet.idsCryptoTransaction.includes(crypto.id)
+                              }
+                              onClick={() => handleOpenModalSellModal(crypto)}
+                            >
+                              Vendre
+                            </BitchestButton>
+                          </TableCell>
+                          <TableCell align="right">
+                            <BitchestButton
+                              onClick={() => handleOpenBuyModal(crypto)}
+                              disabled={+wallet.balance <= 0}
+                            >
+                              Acheter
+                            </BitchestButton>
+                          </TableCell>
+                        </>
+                      )}
                     </TableRow>
                   );
                 })}
@@ -126,6 +136,20 @@ const CryptoPage = () => {
           </Table>
         </TableContainer>
       </Box>
+      {cotationRef.current && user && (
+        <>
+          <ModalBuy
+            open={openModalBuy}
+            setOpen={setOpenModalBuy}
+            cotation={cotationRef.current}
+          />
+          <ModalSell
+            open={openModalSell}
+            setOpen={setOpenModalSell}
+            cotation={cotationRef.current}
+          />
+        </>
+      )}
     </>
   );
 };
