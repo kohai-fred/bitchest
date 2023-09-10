@@ -40,6 +40,7 @@ const LoginPage = () => {
   const {
     register,
     handleSubmit,
+    reset,
     formState: { errors },
   } = useForm<FormValues>();
 
@@ -51,6 +52,8 @@ const LoginPage = () => {
     if (!isError) return;
     const err = error as Error;
     if (err.message) enqueueSnackbar(err.message, { variant: "error" });
+    reset({ password: "" });
+    setFormData("");
   }, [isError]);
 
   return (

@@ -6,7 +6,6 @@ import {
   DialogContent,
   DialogContentText,
   DialogTitle,
-  Fade,
   FormControl,
   FormGroup,
   FormHelperText,
@@ -15,7 +14,6 @@ import {
   Select,
   TextField,
 } from "@mui/material";
-import type { TransitionProps } from "@mui/material/transitions";
 import { USER_ROLE } from "@src/constants/userRoles";
 import {
   createUser,
@@ -30,7 +28,7 @@ import {
 } from "@src/validation/userFormRules";
 import { useQuery } from "@tanstack/react-query";
 import { useSnackbar } from "notistack";
-import { ReactElement, Ref, forwardRef, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { Controller, useForm } from "react-hook-form";
 
 type ModalProps = {
@@ -43,16 +41,7 @@ type ModalProps = {
 export type FormValuesUser = Omit<
   UserType,
   "created_at" | "updated_at" | "email_verified_at" | "id" | "token"
-> & { id?: number; password: string };
-
-const Transition = forwardRef(function Transition(
-  props: TransitionProps & {
-    children: ReactElement<any, any>;
-  },
-  ref: Ref<unknown>
-) {
-  return <Fade ref={ref} {...props} />;
-});
+> & { id?: number; password?: string };
 
 const initialUser: FormValuesUser = {
   firstname: "",
@@ -62,8 +51,11 @@ const initialUser: FormValuesUser = {
   password: "",
   presentation: "",
 };
+
 const ModalUserForm = ({ open, userEdit, setOpen, refetch }: ModalProps) => {
+  const isEdit = !!userEdit;
   const user = !userEdit ? { ...initialUser } : { ...userEdit, password: "" };
+  const connectedUser = getUserCookies();
   const [formData, setFormData] = useState(user);
   const [isEmailExist, setIsEmailExist] = useState(false);
   const [makeRequest, setMakeRequest] = useState(false);
@@ -96,8 +88,12 @@ const ModalUserForm = ({ open, userEdit, setOpen, refetch }: ModalProps) => {
 
   const formSubmit = async (formValue: FormValuesUser) => {
     if (isEmailExist) return;
+    if (connectedUser?.id !== user.id && isEdit) {
+      delete formValue.password;
+    }
     setFormData(formValue);
     setMakeRequest(true);
+    clearForm();
   };
 
   async function checkEmail(email: string) {
@@ -133,6 +129,7 @@ const ModalUserForm = ({ open, userEdit, setOpen, refetch }: ModalProps) => {
 
   useEffect(() => {
     if (!isError) return;
+    setMakeRequest(false);
     enqueueSnackbar(`Une erreur est survenue : ${(error as Error).message}`, {
       variant: "error",
     });
@@ -188,20 +185,22 @@ const ModalUserForm = ({ open, userEdit, setOpen, refetch }: ModalProps) => {
               {isEmailExist ? MESSAGE_EMAIL_IS_TAKEN : ""}
             </FormHelperText>
           </FormGroup>
-          <FormGroup>
-            <TextField
-              label="Mot de passe"
-              type="password"
-              id="password"
-              {...register("password", {
-                ...USER_FORM_RULES.password,
-                required: "le mot de passe est obligatoire",
-              })}
-            />
-            <FormHelperText sx={{ color: "red" }}>
-              {errors.password?.message}
-            </FormHelperText>
-          </FormGroup>
+          {(!isEdit || connectedUser?.id === user.id) && (
+            <FormGroup>
+              <TextField
+                label="Mot de passe"
+                type="password"
+                id="password"
+                {...register("password", {
+                  ...USER_FORM_RULES.password,
+                  required: "le mot de passe est obligatoire",
+                })}
+              />
+              <FormHelperText sx={{ color: "red" }}>
+                {errors.password?.message}
+              </FormHelperText>
+            </FormGroup>
+          )}
           <FormGroup>
             <TextField
               label="Prénom"
