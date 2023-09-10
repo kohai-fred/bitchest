@@ -3,6 +3,7 @@
 namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Validation\Rule;
 
 class UserFormRequest extends FormRequest
@@ -22,19 +23,31 @@ class UserFormRequest extends FormRequest
      */
     public function rules(): array
     {
-        $userId = $this->route('user');
+        $user = $this->route('user');
 
-        return [
+        $rules = [
             'firstname' => ['required', 'string'],
             'lastname' => ['required', 'string'],
             'email' => [
                 'required',
                 'email',
-                Rule::unique('users')->ignore($userId),
+                Rule::unique('users')->ignore($user),
             ],
-            'password' => ['required', 'string', 'min:8', 'regex:/^(?=.*\d)(?=.*[a-z])(?=.*[A-Z]).{8,}$/'],
             'role' => ['required', 'in:admin,client'],
             'presentation' => ['nullable', 'string', 'max:200'],
         ];
+
+        if ($this->isSelfUpdate()) {
+            $rules['password'] = ['required', 'string', 'min:8', 'regex:/^(?=.*\d)(?=.*[a-z])(?=.*[A-Z]).{8,}$/'];
+        }
+
+        return $rules;
+    }
+
+    // Détermine si l'utilisateur met à jour son propre compte
+    protected function isSelfUpdate()
+    {
+        $user = Auth::user();
+        return $this->route()->named('admin.users.update') && $this->route('user')->id == $user->id;
     }
 }
