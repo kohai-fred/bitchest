@@ -45,4 +45,41 @@ class User extends Authenticatable
         'email_verified_at' => 'datetime',
         'password' => 'hashed',
     ];
+    public function isAdmin()
+    {
+        return $this->role === 'admin';
+    }
+
+    public function wallet()
+    {
+        return $this->hasOne(Wallet::class);
+    }
+
+    public function transactions()
+    {
+        return $this->hasMany(Transaction::class, 'user_id');
+    }
+
+    public function totalCryptoBuy($cryptoId)
+    {
+        return $this->transactions()
+            ->where('crypto_currency_id', $cryptoId)
+            ->where('type', 'buy')
+            ->sum('quantity');
+    }
+
+    public function totalCryptoSell($cryptoId)
+    {
+        return $this->transactions()
+            ->where('crypto_currency_id', $cryptoId)
+            ->where('type', 'sell')
+            ->sum('quantity');
+    }
+
+    public function totalQuantityToSell($cryptoId)
+    {
+        $quantityBuy = $this->totalCryptoBuy($cryptoId);
+        $quantitySell = $this->totalCryptoSell($cryptoId);
+        return round($quantityBuy - $quantitySell, 2);
+    }
 }
