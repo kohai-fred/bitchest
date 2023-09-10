@@ -4,44 +4,39 @@ import {
   Dialog,
   DialogActions,
   DialogContent,
-  DialogContentText,
   DialogTitle,
+  Typography,
 } from "@mui/material";
-import {
-  getRemainingQuantityOfCrypto,
-  sellCrypto,
-} from "@src/services/walletAndTransactions";
+import { sellCrypto } from "@src/services/walletAndTransactions";
 import { useWalletStore } from "@src/store/wallet.store";
 import { customColors } from "@src/themes/customColors";
-import { LatestCotation } from "@src/types/cryptos";
-import { useQuery } from "@tanstack/react-query";
 import { useSnackbar } from "notistack";
-import { Dispatch, SetStateAction, useEffect, useState } from "react";
+import { Dispatch, SetStateAction } from "react";
 import { useForm } from "react-hook-form";
 import BitchestButton from "../BitchestButton";
+import DialogContentTextSpaceBetween from "../DialogContentTextSpaceBetween";
 import TextPrice from "../TextPrice";
 
 type Props = {
   open: boolean;
   setOpen: Dispatch<SetStateAction<boolean>>;
-  cotation: LatestCotation;
+  id: number;
 };
 
-const ModalSell = ({ open, setOpen, cotation }: Props) => {
+const ModalSell = ({ open, setOpen, id }: Props) => {
   const bitchestColor = customColors.bitchest.main;
   const { enqueueSnackbar } = useSnackbar();
-  const { wallet, setNewBalance, removeIdsCryptoTransaction } = useWalletStore(
-    (state) => ({
-      ...state,
-    })
-  );
-  const [newTempBalance, setNewTempBalance] = useState(wallet.balance);
-  const [amount, setAmount] = useState("0");
-  const { data } = useQuery({
-    queryKey: [`crypto-sell`, cotation.id],
-    queryFn: () => getRemainingQuantityOfCrypto(cotation.id),
-    enabled: !!open,
-  });
+  const {
+    wallet,
+    setNewBalance,
+    getOwnedCryptoById,
+    removeOwnedCryptoById,
+    updateTransactionClientHistory,
+  } = useWalletStore((state) => ({
+    ...state,
+  }));
+
+  const dataRef = getOwnedCryptoById(id);
 
   const { handleSubmit } = useForm();
 
@@ -50,38 +45,21 @@ const ModalSell = ({ open, setOpen, cotation }: Props) => {
   }
 
   async function formSubmit() {
-    const [res, status, error] = await sellCrypto(cotation.id);
+    const [res, status, error] = await sellCrypto(id);
     if (status) {
-      console.log("🆘 STATUS", status, error);
       enqueueSnackbar(`${JSON.parse(error).message}`, {
         variant: "error",
       });
     }
     const { data } = res;
     setNewBalance(data.wallet.balance.toFixed(4));
-    removeIdsCryptoTransaction(cotation.id);
+    removeOwnedCryptoById(id);
+    updateTransactionClientHistory();
     handleClose();
     enqueueSnackbar(`Vente réussi`, {
       variant: "success",
     });
   }
-
-  useEffect(() => {
-    if (!data) return;
-    const amount = data * +cotation.latest_cotation.price;
-    const newBalance = +wallet.balance + amount;
-    console.log(
-      "🚀 ~ file: ModalSell.tsx:80 ~ useEffect ~ data:",
-      data,
-      "amout",
-      amount.toFixed(4),
-      "newBalance",
-      newBalance.toFixed(4)
-    );
-    Math.round(data);
-    setAmount(amount.toFixed(4));
-    setNewTempBalance(newBalance.toFixed(4));
-  }, [data]);
 
   return (
     <Dialog
@@ -90,37 +68,59 @@ const ModalSell = ({ open, setOpen, cotation }: Props) => {
       component="form"
       onSubmit={handleSubmit(formSubmit)}
     >
-      <DialogTitle>Vendre des {cotation.name}</DialogTitle>
-      <DialogContent>
-        <Box ml={1} mb={3}>
-          <DialogContentText>
-            Quantité :
-            <TextPrice price={data} symbol={cotation.symbol} />
-          </DialogContentText>
-          <DialogContentText>
-            Cours actuel :
-            <TextPrice price={cotation.latest_cotation.price} />
-          </DialogContentText>
-          <DialogContentText>
-            Solde actuelle :
-            <TextPrice price={wallet.balance} />
-          </DialogContentText>
-          <DialogContentText>
-            Nouveau solde :
-            <TextPrice price={newTempBalance} />
-          </DialogContentText>
-          <DialogContentText>
-            Gain :
-            <TextPrice price={amount} priceColor={bitchestColor} />
-          </DialogContentText>
-        </Box>
-      </DialogContent>
-      <DialogActions>
-        <Button onClick={handleClose} variant="outlined">
-          Annuler
-        </Button>
-        <BitchestButton type="submit">Vendre</BitchestButton>
-      </DialogActions>
+      {dataRef && (
+        <>
+          <DialogTitle>
+            Vendre tous les&nbsp;
+            <Typography
+              component="span"
+              textTransform="uppercase"
+              fontStyle="italic"
+              fontSize="1.2rem"
+            >
+              {dataRef.name}
+            </Typography>
+          </DialogTitle>
+          <DialogContent>
+            <Box ml={1} mb={3}>
+              <DialogContentTextSpaceBetween>
+                Quantité :
+                <TextPrice
+                  price={dataRef.available_quantity_to_sell}
+                  symbol={dataRef.symbol}
+                />
+              </DialogContentTextSpaceBetween>
+              <DialogContentTextSpaceBetween>
+                Cours actuel :
+                <TextPrice price={dataRef.latest_cotation} />
+              </DialogContentTextSpaceBetween>
+              <DialogContentTextSpaceBetween>
+                Solde actuelle :
+                <TextPrice price={wallet.balance} />
+              </DialogContentTextSpaceBetween>
+              <DialogContentTextSpaceBetween>
+                Nouveau solde :
+                <TextPrice
+                  price={(+wallet.balance + +dataRef.potential_gain).toFixed(4)}
+                />
+              </DialogContentTextSpaceBetween>
+              <DialogContentTextSpaceBetween>
+                Gain :
+                <TextPrice
+                  price={dataRef.potential_gain}
+                  priceColor={bitchestColor}
+                />
+              </DialogContentTextSpaceBetween>
+            </Box>
+          </DialogContent>
+          <DialogActions>
+            <Button onClick={handleClose} variant="outlined">
+              Annuler
+            </Button>
+            <BitchestButton type="submit">Vendre</BitchestButton>
+          </DialogActions>
+        </>
+      )}
     </Dialog>
   );
 };

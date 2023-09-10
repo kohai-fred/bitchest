@@ -4,25 +4,30 @@ import {
   Dialog,
   DialogActions,
   DialogContent,
-  DialogContentText,
   DialogTitle,
   TextField,
   Typography,
 } from "@mui/material";
 import { buyCrypto } from "@src/services/walletAndTransactions";
 import { useWalletStore } from "@src/store/wallet.store";
-import type { LatestCotation } from "@src/types/cryptos";
 import { BUY_RULES } from "@src/validation/transactions";
 import { useSnackbar } from "notistack";
 import { Dispatch, SetStateAction, useRef, useState } from "react";
 import { Controller, useForm } from "react-hook-form";
 import BitchestButton from "../BitchestButton";
+import DialogContentTextSpaceBetween from "../DialogContentTextSpaceBetween";
 import TextPrice from "../TextPrice";
+
+type DataBuy = {
+  id: number;
+  latestCotation: string;
+  name: string;
+};
 
 type Props = {
   open: boolean;
   setOpen: Dispatch<SetStateAction<boolean>>;
-  cotation: LatestCotation;
+  data: DataBuy;
 };
 
 type FormValues = {
@@ -30,17 +35,21 @@ type FormValues = {
   quantity: string;
 };
 
-export default function ModalBuy({ open, setOpen, cotation }: Props) {
-  const { wallet, setNewBalance, addNewIdsCryptoTransaction } = useWalletStore(
-    (state) => ({
-      ...state,
-    })
-  );
+export default function ModalBuy({ open, setOpen, data }: Props) {
+  const {
+    wallet,
+    setNewBalance,
+    setOfOwnedCryptos,
+    updateTransactionClientHistory,
+  } = useWalletStore((state) => ({
+    ...state,
+  }));
   const [newTempBalance, setNewTempBalance] = useState(wallet.balance);
   const { handleSubmit, control, reset } = useForm<FormValues>({
     defaultValues: { quantity: "0" },
   });
   const { enqueueSnackbar } = useSnackbar();
+
   const valueRef = useRef(0);
   const costRef = useRef(0);
 
@@ -53,7 +62,7 @@ export default function ModalBuy({ open, setOpen, cotation }: Props) {
   };
 
   async function formSubmit(formValue: FormValues) {
-    formValue.crypto_id = cotation.id;
+    formValue.crypto_id = data.id;
     const [res, status, error] = await buyCrypto(formValue);
     if (status) {
       enqueueSnackbar(`${JSON.parse(error).message}`, {
@@ -61,9 +70,9 @@ export default function ModalBuy({ open, setOpen, cotation }: Props) {
       });
       return;
     }
-    const { data } = res;
-    setNewBalance(data.balance.toFixed(4));
-    addNewIdsCryptoTransaction(data.transaction.crypto_currency_id);
+    setNewBalance(res.data.balance.toFixed(4));
+    setOfOwnedCryptos(res.data.ownedCrypto);
+    updateTransactionClientHistory();
     handleClose();
     enqueueSnackbar(`Achat réussi`, {
       variant: "success",
@@ -71,13 +80,12 @@ export default function ModalBuy({ open, setOpen, cotation }: Props) {
   }
 
   function calculNewTempBalance(value: string) {
-    console.log("🆘 NEWTEMP", newTempBalance);
     valueRef.current = +value;
     if (+value <= 0) {
       setNewTempBalance(wallet.balance);
       return;
     }
-    costRef.current = +cotation.latest_cotation.price * +value;
+    costRef.current = +data.latestCotation * +value;
     const totalCost = (+wallet.balance - costRef.current).toFixed(4);
     setNewTempBalance(() => totalCost);
     if (+totalCost < 0) {
@@ -94,15 +102,15 @@ export default function ModalBuy({ open, setOpen, cotation }: Props) {
       component="form"
       onSubmit={handleSubmit(formSubmit)}
     >
-      <DialogTitle>Acheter des {cotation.name} </DialogTitle>
+      <DialogTitle>Acheter des {data.name} </DialogTitle>
       <DialogContent>
         <Box ml={1} mb={3}>
-          <DialogContentText>
-            Cours : <TextPrice price={cotation.latest_cotation.price} />
-          </DialogContentText>
-          <DialogContentText>
+          <DialogContentTextSpaceBetween>
+            Cours : <TextPrice price={data.latestCotation} />
+          </DialogContentTextSpaceBetween>
+          <DialogContentTextSpaceBetween>
             Solde actuelle : <TextPrice price={wallet.balance} />
-          </DialogContentText>
+          </DialogContentTextSpaceBetween>
         </Box>
         <Controller
           name="quantity"
@@ -112,7 +120,7 @@ export default function ModalBuy({ open, setOpen, cotation }: Props) {
             <>
               <TextField
                 autoFocus
-                id={cotation.name}
+                id={data.name}
                 label="Quantité"
                 type="number"
                 fullWidth
@@ -132,16 +140,16 @@ export default function ModalBuy({ open, setOpen, cotation }: Props) {
           )}
         />
         <Box mt={1} ml={1}>
-          <DialogContentText>
+          <DialogContentTextSpaceBetween>
             Coût achat : <TextPrice price={costRef.current.toFixed(4)} />
-          </DialogContentText>
-          <DialogContentText>
+          </DialogContentTextSpaceBetween>
+          <DialogContentTextSpaceBetween>
             Nouveau solde :
             <TextPrice
               price={newTempBalance}
               priceColor={`${+newTempBalance >= 0 ? "white" : "error"}`}
             />
-          </DialogContentText>
+          </DialogContentTextSpaceBetween>
         </Box>
       </DialogContent>
       <DialogActions>
