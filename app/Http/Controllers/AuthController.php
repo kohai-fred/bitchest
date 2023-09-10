@@ -13,6 +13,12 @@ class AuthController extends Controller
     {
         $user = User::where('email', $request->email)->first();
 
+        if (!$user)
+            return response()->json([
+                'message' => 'Non autorisé',
+                'status' => 401
+            ]);
+
         if (Hash::check($request->password, $user->password)) {
             $user->token = $user->createToken(time())->plainTextToken;
             return response()->json([
