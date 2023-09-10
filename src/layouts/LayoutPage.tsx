@@ -1,8 +1,8 @@
-import { Logout, PersonPin } from "@mui/icons-material";
+import { Logout } from "@mui/icons-material";
 import ChevronLeftIcon from "@mui/icons-material/ChevronLeft";
 import ChevronRightIcon from "@mui/icons-material/ChevronRight";
 import MenuIcon from "@mui/icons-material/Menu";
-import { ListItemButton, Typography } from "@mui/material";
+import { Typography } from "@mui/material";
 import MuiAppBar, { AppBarProps as MuiAppBarProps } from "@mui/material/AppBar";
 import Box from "@mui/material/Box";
 import CssBaseline from "@mui/material/CssBaseline";
@@ -14,6 +14,7 @@ import ListItem from "@mui/material/ListItem";
 import Toolbar from "@mui/material/Toolbar";
 import { CSSObject, Theme, styled, useTheme } from "@mui/material/styles";
 import Logo from "@src/assets/bitchest_logo.png";
+import LogoMini from "@src/assets/bitchest_logo_32.png";
 import RequireAuth from "@src/auth/RequireAuth";
 import {
   ListItemButtonComponents,
@@ -21,15 +22,14 @@ import {
 } from "@src/components/ListItemComponents";
 import useLogout from "@src/hooks/useLogout";
 import { adminMenu, clientMenu } from "@src/routes/menu";
-import {
-  getBalance,
-  getInfoClientTransactions,
-} from "@src/services/walletAndTransactions";
+import { getCryptoCurrencies } from "@src/services/cryptos";
+import { getInfoClientTransactions } from "@src/services/walletAndTransactions";
+import { useCryptoStore } from "@src/store/crypto.store";
 import { useWalletStore } from "@src/store/wallet.store";
 import { getUserCookies } from "@src/utils/cookiesUser";
 import { useQuery } from "@tanstack/react-query";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import { Outlet, useLocation, useNavigate } from "react-router-dom";
 
 const drawerWidth = 240;
@@ -107,6 +107,15 @@ const Drawer = styled(MuiDrawer, {
   }),
 }));
 
+async function initStores() {
+  const { wallet } = await getInfoClientTransactions();
+  if (!wallet) throw new Error("Une erreur est survenue");
+  const { currencies } = await getCryptoCurrencies();
+  if (!currencies) throw new Error("Une erreur est survenue");
+
+  return { wallet, currencies };
+}
+
 const LayoutPage = () => {
   const userCookie = getUserCookies();
   const menus = userCookie?.role === "admin" ? adminMenu : clientMenu;
@@ -118,13 +127,12 @@ const LayoutPage = () => {
   const { wallet, initWallet } = useWalletStore((state) => ({
     ...state,
   }));
+  const { setCryptoCurrencies } = useCryptoStore((state) => ({ ...state }));
   const { data, isLoading, isError } = useQuery({
     queryKey: [QUERY_KEY],
-    queryFn: getInfoClientTransactions,
+    queryFn: initStores,
     enabled: userCookie?.role === "client",
     retry: 1,
-    refetchOnWindowFocus: false,
-    staleTime: Infinity,
   });
 
   const handleDrawerOpen = () => {
@@ -143,7 +151,8 @@ const LayoutPage = () => {
 
   useEffect(() => {
     if (!data) return;
-    initWallet(data);
+    initWallet(data.wallet);
+    setCryptoCurrencies(data.currencies);
   }, [data]);
 
   return (
@@ -173,11 +182,16 @@ const LayoutPage = () => {
                 sx={{
                   display: "flex",
                   alignItems: "center",
-                  justifyContent: "center",
+                  justifyContent: { md: "center" },
                   width: "100%",
                 }}
               >
-                <img src={Logo} alt="" />
+                <Box display={{ xs: "inherit", md: "none" }}>
+                  <img src={LogoMini} alt="Logo de Bitchest" />
+                </Box>
+                <Box display={{ xs: "none", md: "inherit" }}>
+                  <img src={Logo} alt="Logo de Bitchest" />
+                </Box>
               </Box>
               <Box>
                 {userCookie && userCookie.role === "client" && (
@@ -198,20 +212,30 @@ const LayoutPage = () => {
             }}
           >
             <DrawerHeader>
-              <IconButton
-                onClick={handleDrawerClose}
-                sx={{
-                  "&:hover": {
-                    color: colorBitchest,
-                  },
-                }}
+              <Box
+                display="flex"
+                alignItems="center"
+                justifyContent={{ xs: "space-between", md: "flex-end" }}
+                width="100%"
               >
-                {theme.direction === "rtl" ? (
-                  <ChevronRightIcon />
-                ) : (
-                  <ChevronLeftIcon />
-                )}
-              </IconButton>
+                <Box display={{ xs: "inherit", md: "none" }} height={40}>
+                  <img src={Logo} alt="Logo de Bitchest" />
+                </Box>
+                <IconButton
+                  onClick={handleDrawerClose}
+                  sx={{
+                    "&:hover": {
+                      color: colorBitchest,
+                    },
+                  }}
+                >
+                  {theme.direction === "rtl" ? (
+                    <ChevronRightIcon />
+                  ) : (
+                    <ChevronLeftIcon />
+                  )}
+                </IconButton>
+              </Box>
             </DrawerHeader>
             <Divider />
             <List>
@@ -259,7 +283,10 @@ const LayoutPage = () => {
               </ListItem>
             </List>
           </Drawer>
-          <Box component="main" sx={{ flexGrow: 1, p: 3 }}>
+          <Box
+            component="main"
+            sx={{ flexGrow: 1, p: 3, width: "calc(100% - 64px)" }}
+          >
             <DrawerHeader />
             <Outlet />
           </Box>
