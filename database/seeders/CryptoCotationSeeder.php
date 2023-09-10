@@ -26,13 +26,14 @@ class CryptoCotationSeeder extends Seeder
                 'crypto_currency_id' => $cryptoId,
                 'price' => $firstCotation,
                 'timestamp' => now()->subDays(30),
+                'created_at' => now()->subDays(30),
             ]);
 
             // Génère les cotations aléatoires sur une période donnée
             for ($daysAgo = 29; $daysAgo >= 1; $daysAgo--) {
                 $cotationChange = getCotationFor($cryptoName);
                 $previousCotation = CryptoCotation::where('crypto_currency_id', $cryptoId)
-                    ->latest('timestamp')
+                    ->latest('created_at')
                     ->first();
 
                 // Calcul de la nouvelle cotation basée sur la précédente
@@ -42,6 +43,7 @@ class CryptoCotationSeeder extends Seeder
                     'crypto_currency_id' => $cryptoId,
                     'price' => $newCotation,
                     'timestamp' => now()->subDays($daysAgo),
+                    'created_at' => now()->subDays($daysAgo),
                 ]);
             }
         }
