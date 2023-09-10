@@ -24,3 +24,16 @@ export async function getCryptoDetails(id: string): Promise<{
   }
   return res.data;
 }
+
+export async function getCryptoCurrencies(): Promise<{
+  currencies: Crypto[];
+}> {
+  const [res, status, message] = await axiosInstance({
+    url: `/crypto-currencies`,
+  });
+
+  if (status) {
+    throw new Error(message);
+  }
+  return { currencies: res.data };
+}
