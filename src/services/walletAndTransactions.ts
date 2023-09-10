@@ -1,3 +1,4 @@
+import { TransactionClientHistory } from "@src/types/transaction.type";
 import axiosInstance from "./axiosInstance";
 
 type BuyCryptoProps = {
@@ -7,16 +8,16 @@ type BuyCryptoProps = {
 
 const URLS = {
   balance: "client/wallet/balance",
-  idsCryptoTransaction: "client/cryptos-id-transactions",
-  allClientTransactions: "client/transactions",
+  transactionClientHistory: "client/transactions-history",
   cryptoRemainingQuantity: "client/crypto-remaining-quantity/",
+  ownedCrypto: "client/owned-crypto",
   buy: "client/buy-crypto",
   sell: "client/sell-crypto",
 };
 const PROMISE_URLS = [
   URLS.balance,
-  URLS.idsCryptoTransaction,
-  URLS.allClientTransactions,
+  URLS.transactionClientHistory,
+  URLS.ownedCrypto,
 ];
 
 export async function getBalance() {
@@ -27,17 +28,9 @@ export async function getBalance() {
   return res.data;
 }
 
-export async function getIdsCryptoTransaction() {
+export async function getTransactionsHistory(): Promise<TransactionClientHistory> {
   const [res, status, error] = await axiosInstance({
-    url: URLS.idsCryptoTransaction,
-  });
-  if (status) throw new Error(error);
-  return res.data;
-}
-
-export async function getAllClientTransactions() {
-  const [res, status, error] = await axiosInstance({
-    url: URLS.allClientTransactions,
+    url: URLS.transactionClientHistory,
   });
   if (status) throw new Error(error);
   return res.data;
@@ -50,9 +43,6 @@ export async function getInfoClientTransactions() {
   const arrayOfError = res.filter((r) => r[1]);
   if (arrayOfError.length > 0) throw new Error("Une erreur est survenue");
 
-  type Acc = {
-    balance: string;
-  };
   const data = res.reduce((acc, [res]) => {
     acc.push(res.data);
     return acc;
@@ -60,8 +50,8 @@ export async function getInfoClientTransactions() {
   return {
     wallet: {
       ...data[0],
-      idsCryptoTransaction: data[1],
-      allClientTransactions: data[2],
+      transactionClientHistory: data[1],
+      ownedCrypto: data[2],
     },
   };
 }
