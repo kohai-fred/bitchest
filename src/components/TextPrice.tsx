@@ -1,7 +1,7 @@
 import { Typography } from "@mui/material";
 
 type Props = {
-  price: string | number;
+  price: string | number | null | undefined;
   symbol?: string;
   priceColor?: string;
 };
@@ -11,7 +11,7 @@ const defaultProps = {
 };
 const TextPrice = ({ price, symbol, priceColor }: Props) => {
   return (
-    <>
+    <Typography component="span">
       &nbsp;
       <Typography component="span" color={priceColor} fontWeight={600}>
         {price}
@@ -20,7 +20,7 @@ const TextPrice = ({ price, symbol, priceColor }: Props) => {
       <Typography variant="caption" fontWeight={200} fontSize="0.6em">
         {symbol}
       </Typography>
-    </>
+    </Typography>
   );
 };
 
