@@ -14,17 +14,20 @@ import { useTheme } from "@mui/material/styles";
 
 type Props = {
   nbRows: number;
+  nbCells?: number;
 };
 
-const SkeletonTable = ({ nbRows }: Props) => {
+const SkeletonTable = ({ nbRows, nbCells }: Props) => {
   const theme = useTheme();
   const sm = useMediaQuery(theme.breakpoints.up("sm"));
   const md = useMediaQuery(theme.breakpoints.up("md"));
   const lg = useMediaQuery(theme.breakpoints.up("lg"));
-  let cellNumber = 2;
-  if (sm) cellNumber = 3;
-  if (md) cellNumber = 4;
-  if (lg) cellNumber = 6;
+  let cellNumber = nbCells ?? 2;
+  if (!nbCells) {
+    if (sm) cellNumber = 3;
+    if (md) cellNumber = 4;
+    if (lg) cellNumber = 6;
+  }
 
   return (
     <TableContainer component={Paper}>
