@@ -1,21 +1,14 @@
-import {
-  Box,
-  Button,
-  Card,
-  CardActions,
-  CardContent,
-  Typography,
-  useTheme,
-} from "@mui/material";
-import Logo from "@src/assets/text_150.png";
+import { Box, Typography } from "@mui/material";
 import ModalUserForm from "@src/components/ModalUserForm";
+import TitlePage from "@src/components/TitlePage";
+import UserCard from "@src/components/UserCard";
 import { getCurrentUser } from "@src/services/getCurrentUser";
 import { useQuery } from "@tanstack/react-query";
 import { useState } from "react";
 
 const MePage = () => {
-  const theme = useTheme();
   const [openFormModal, setOpenFormModal] = useState(false);
+
   const { data: user, refetch } = useQuery({
     queryKey: ["user"],
     queryFn: getCurrentUser,
@@ -25,120 +18,45 @@ const MePage = () => {
   });
 
   return (
-    <Box
-      id="🧰_ME_PAGE"
-      sx={{
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "center",
-        mt: "8vh",
-      }}
-    >
-      {user && (
-        <Card
-          sx={{
-            minHeight: 500,
-            minWidth: 288,
-            maxWidth: 345,
-            border: `1px solid ${theme.palette.divider}`,
-          }}
-        >
-          <Box
-            sx={{
-              position: "relative",
-              display: "flex",
-              height: "200px",
-              boxShadow: "inset 0 200px 0 blue",
-              m: 2,
-              mb: "60px",
-              border: `1px solid ${theme.palette.divider}`,
-              borderRadius: 2,
-            }}
-          >
-            <Box
-              sx={{
-                borderRadius: 2,
-
-                flex: 1,
-                backgroundImage: `url(${Logo})`,
-                backgroundSize: "40%",
-                // backgroundPosition: "-50% -10%",
-                "::after": {
-                  position: "absolute",
-                  content: '""',
-                  inset: 0,
-                  background:
-                    "radial-gradient(circle, rgba(0,0,0,0) 0%, #121212 80%, #121212 100%)",
-                  borderRadius: 2,
-                },
-                "::before": {
-                  position: "absolute",
-                  content: '""',
-                  inset: 0,
-                  opacity: "1",
-                  background:
-                    "linear-gradient(180deg, rgba(0,0,0,0) -10%, #121212 100%)",
-                  borderRadius: 2,
-                },
-              }}
-            ></Box>
-            <Typography
-              variant="caption"
-              sx={{ position: "absolute", bottom: 10, right: 15 }}
-            >
-              {user.email}
+    <>
+      <TitlePage title="Ma page perso" />
+      <Box
+        component="article"
+        sx={{
+          display: "flex",
+          alignItems: "flex-start",
+          justifyContent: "space-between",
+          flexDirection: { xs: "column", md: "row" },
+          gap: 5,
+          mb: 5,
+        }}
+      >
+        {user && (
+          <Box component="section">
+            <Typography variant="h4" mb={2} textAlign="center" fontWeight={500}>
+              Mes Informations
             </Typography>
+            <UserCard user={user} setOpenFormModal={setOpenFormModal} />
           </Box>
-          <CardContent>
+        )}
+        {user?.role === "client" && (
+          <Box flex={1} height="400px" component="section">
+            <Typography variant="h4" mb={2} textAlign="center" fontWeight={500}>
+              Le résumé de vos achats
+            </Typography>
             <Box
               sx={{
-                display: "flex",
-                justifyContent: "space-between",
-                alignItems: "flex-end",
-                gap: 2,
-                mb: 2,
+                display: "grid",
+                placeContent: "center",
+                height: "inherit",
               }}
             >
-              <Typography gutterBottom variant="h5" component="div">
-                {user.firstname} {user.lastname}
-              </Typography>
-              <Typography
-                gutterBottom
-                fontSize={12}
-                sx={{ color: "customColors.bitchest.dark" }}
-              >
-                {user.role}
-              </Typography>
+              <Typography fontSize="4em">Arrive bientôt ....</Typography>
             </Box>
-            <Typography
-              gutterBottom
-              variant="body2"
-              color="text.secondary"
-              component="div"
-              minHeight={100}
-            >
-              {user.presentation ??
-                "Cliquer sur le bouton modifier juste en dessous pour ajouter une présentation."}
-            </Typography>
-          </CardContent>
-          <CardActions>
-            <Button
-              onClick={() => setOpenFormModal(true)}
-              size="small"
-              variant="outlined"
-              sx={{
-                marginInline: "auto 0",
-                "&:hover": {
-                  color: "customColors.bitchest.main",
-                  borderColor: "customColors.bitchest.main",
-                },
-              }}
-            >
-              Modifier
-            </Button>
-          </CardActions>
-        </Card>
-      )}
+          </Box>
+        )}
+      </Box>
+
       {openFormModal && user && (
         <ModalUserForm
           open={openFormModal}
@@ -147,7 +65,7 @@ const MePage = () => {
           refetch={refetch}
         />
       )}
-    </Box>
+    </>
   );
 };
 
