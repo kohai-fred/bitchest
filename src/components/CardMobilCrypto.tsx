@@ -9,13 +9,12 @@ import {
 } from "@mui/material";
 import MuiCard, { CardProps } from "@mui/material/Card";
 import { styled } from "@mui/material/styles";
+import { useWalletStore } from "@src/store/wallet.store";
 import { customColors } from "@src/themes/customColors";
 import { getUserCookies } from "@src/utils/cookiesUser";
 import { PropsWithChildren } from "react";
 import BitchestButton from "./BitchestButton";
 import ImgCryptoLogo from "./ImgCryptoLogo";
-import { useWalletStore } from "@src/store/wallet.store";
-import { useCryptoStore } from "@src/store/crypto.store";
 
 type Props<T> = {
   name: string;
@@ -45,7 +44,6 @@ const CardMobilCrypto = (props: PropsWithChildren<Props<CardProps>>) => {
     cardProps,
   } = props;
   const balance = useWalletStore((state) => state.wallet.balance);
-  const {} = useCryptoStore((state) => state.currencies);
   const user = getUserCookies();
   const isClient = user?.role === "client";
   const bitchestColor = customColors.bitchest.main;
