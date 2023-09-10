@@ -2,15 +2,7 @@ import LayoutPage from "@src/layouts/LayoutPage";
 import LoginPage from "@src/pages/LoginPage";
 import { createBrowserRouter } from "react-router-dom";
 import { adminMenu, clientMenu } from "./menu";
-import CryptoDetails from "@src/pages/CryptoDetails";
 
-const commons = [
-  {
-    title: "Details",
-    path: "details/:id",
-    element: <CryptoDetails />,
-  },
-];
 export const routes = [
   {
     title: "Login",
@@ -21,13 +13,13 @@ export const routes = [
     title: "Client",
     path: "/client",
     element: <LayoutPage />,
-    children: [...clientMenu, ...commons],
+    children: [...clientMenu],
   },
   {
     title: "Admin",
     path: "/admin",
     element: <LayoutPage />,
-    children: [...adminMenu, ...commons],
+    children: [...adminMenu],
   },
 ];
 
