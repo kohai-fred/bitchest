@@ -9,7 +9,6 @@ type BuyCryptoProps = {
 const URLS = {
   balance: "client/wallet/balance",
   transactionClientHistory: "client/transactions-history",
-  cryptoRemainingQuantity: "client/crypto-remaining-quantity/",
   ownedCrypto: "client/owned-crypto",
   buy: "client/buy-crypto",
   sell: "client/sell-crypto",
@@ -66,15 +65,6 @@ export async function buyCrypto({ crypto_id, quantity }: BuyCryptoProps) {
     },
   });
   return res;
-}
-
-export async function getRemainingQuantityOfCrypto(id: number) {
-  const [res, status, error] = await axiosInstance({
-    url: URLS.cryptoRemainingQuantity + id,
-  });
-
-  if (status) throw new Error(error);
-  return res.data;
 }
 
 export async function sellCrypto(id: number) {
