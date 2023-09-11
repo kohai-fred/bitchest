@@ -54,7 +54,7 @@ const initialUser: FormValuesUser = {
 
 const ModalUserForm = ({ open, userEdit, setOpen, refetch }: ModalProps) => {
   const isEdit = !!userEdit;
-  const user = !userEdit ? { ...initialUser } : { ...userEdit, password: "" };
+  const user = !userEdit ? { ...initialUser } : { ...userEdit };
   const connectedUser = getUserCookies();
   const [formData, setFormData] = useState(user);
   const [isEmailExist, setIsEmailExist] = useState(false);
@@ -89,11 +89,12 @@ const ModalUserForm = ({ open, userEdit, setOpen, refetch }: ModalProps) => {
   const formSubmit = async (formValue: FormValuesUser) => {
     if (isEmailExist) return;
     if (connectedUser?.id !== user.id && isEdit) {
+      console.log("🆘 DANS LE IF");
       delete formValue.password;
     }
-    setFormData(formValue);
+    console.log("🆘 FormData", formValue);
+    setFormData(() => formValue);
     setMakeRequest(true);
-    clearForm();
   };
 
   async function checkEmail(email: string) {
