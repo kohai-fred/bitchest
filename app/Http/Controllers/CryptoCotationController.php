@@ -8,14 +8,14 @@ use Illuminate\Http\Request;
 
 class CryptoCotationController extends Controller
 {
-    public function all()
-    {
-        $cryptosWithCotations = CryptoCotation::with('cryptocurrency')
-            ->orderBy('timestamp', 'desc')
-            ->get();
+    // public function all()
+    // {
+    //     $cryptosWithCotations = CryptoCotation::with('cryptocurrency')
+    //         ->orderBy('timestamp', 'desc')
+    //         ->get();
 
-        return response()->json(['cryptosWithCotations' => $cryptosWithCotations]);
-    }
+    //     return response()->json(['cryptosWithCotations' => $cryptosWithCotations]);
+    // }
 
     public function latestCotation()
     {

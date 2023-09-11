@@ -13,7 +13,7 @@ return new class extends Migration
     {
         Schema::create('transactions', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('user_id')->constrained('users');
+            $table->foreignId('user_id')->constrained('users')->onDelete('cascade');
             $table->foreignId('crypto_currency_id')->constrained('crypto_currencies');
             $table->decimal('quantity', 10, 2);
             $table->decimal('price', 10, 2);

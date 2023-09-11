@@ -16,7 +16,7 @@ Route::middleware('auth:sanctum')->group(
         Route::get('/current-user', [UserController::class, 'getCurrentUser'])->name('current-user');
         Route::post('/check-email', [UserController::class, 'checkEmail'])->name('check-email');
 
-        Route::get('/cotations', [CryptoCotationController::class, 'all'])->name('cotations');
+        // Route::get('/cotations', [CryptoCotationController::class, 'all'])->name('cotations');
         Route::get('/latest-cotations', [CryptoCotationController::class, 'latestCotation'])->name('latest-cotations');
         Route::get('/crypto/{id}', [CryptoCotationController::class, 'cryptoCotationDetails'])->name('crypto-cotation-details');
         Route::get('/crypto-currencies', [CryptoCurrencyController::class, 'index'])->name('index');
@@ -37,5 +37,9 @@ Route::prefix('client')->middleware('auth:sanctum')->name('client.')->group(func
     // Route::get('/cryptos-id-transactions', [TransactionController::class, 'getCryptoIdsOfUserTransactions'])->name('getCryptoIdsOfUserTransactions');
     Route::get('/crypto-remaining-quantity/{cryptoId}', [TransactionController::class, 'getRemainingQuantityOfCrypto'])->name('getRemainingQuantityOfCrypto');
     Route::get('/owned-crypto', [TransactionController::class, 'getUserOwnedCryptoData'])->name('getUserOwnedCryptoData');
-    Route::get('/transactions-summary', [TransactionController::class, 'getTransactionSummary'])->name('getTransactionSummary');
+    // TODO: faire une résumé des transactions
+    Route::get(
+        '/transactions-summary',
+        [TransactionController::class, 'getTransactionSummary']
+    )->name('getTransactionSummary');
 });

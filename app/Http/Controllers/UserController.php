@@ -65,6 +65,11 @@ class UserController extends Controller
     }
     public function destroy(User $user)
     {
+        // Supprimer les enregistrements liés dans la table transactions
+        $user->transactions()->delete();
+        // Supprimer les enregistrements liés dans la table wallets
+        $user->wallet()->delete();
+
         $user->delete();
         return User::all();
     }
